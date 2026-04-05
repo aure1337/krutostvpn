@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psychosis VPN</title>
+
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+
+<body class="dark">
+
+<div class="content">
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginScreen">
+
+    <div class="theme-toggle" onclick="toggleTheme()">☀️</div>
+
+    <div class="logo">
+        <h1>Psychosis VPN</h1>
+        <p>Premium Access</p>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="form-group">
+        <label>Ключ доступа</label>
+
+        <div class="password-wrapper">
+            <input type="password" id="password" placeholder="Введите ключ">
+            <button class="show-btn" onclick="togglePassword()">Показать</button>
+        </div>
+    </div>
+
+    <button class="button" onclick="openVPN()">Подключиться</button>
+</div>
+
+<!-- PROFILE -->
+<div id="profileScreen" style="display:none;">
+
+    <div class="theme-toggle" onclick="toggleTheme()">☀️</div>
+
+    <div class="profile-header">
+        <div class="profile-avatar">👤</div>
+        <h2>Ваш профиль</h2>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Статус</div>
+        <div class="info-value status-active">Активен</div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Подписка до</div>
+        <div class="info-value" id="expiryDate"></div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Серверы</div>
+        <div class="info-value" id="serversInfo"></div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Осталось времени</div>
+        <div class="countdown-items big">
+            <div class="countdown-item"><span id="days" class="big-num"></span><span>дни</span></div>
+            <div class="countdown-item"><span id="hours" class="big-num"></span><span>часы</span></div>
+            <div class="countdown-item"><span id="minutes" class="big-num"></span><span>мин</span></div>
+            <div class="countdown-item"><span id="seconds" class="big-num"></span><span>сек</span></div>
+        </div>
+    </div>
+
+    <button class="button" onclick="copySub()">Скопировать подписку</button>
+    <button class="button button-logout" onclick="logout()">Выйти</button>
+</div>
+
+</div>
+</div>
+
+<script>
+
+// ===== ПОДПИСКИ =====
+const passwords = {
+    'f1e875e5aa9f267cc28654f9e66f2cc448f704b350a602c616fe887d5e23a85a': {
+        url: 'https://raw.githubusercontent.com/aure1337/krutostvpn/main/test77',
+        servers: 3
+    },
+    '6417d118af2071c929a4232db38fa0ecf58932845343b5e986ae407cb908211e': {
+        url: 'https://raw.githubusercontent.com/aure1337/krutostvpn/main/test22',
+        servers: 3
+    }
+};
+
+let currentSubUrl;
+let countdownInterval;
+
+// ===== LOGIN =====
+async function openVPN() {
+    const pwd = password.value;
+    if (!pwd) return showError('Введите ключ');
+
+    const hash = CryptoJS.SHA256(pwd).toString();
+    const config = passwords[hash];
+
+    if (!config) return showError('Неверный ключ');
+
+    try {
+        const res = await fetch("https://corsproxy.io/?" + encodeURIComponent(config.url));
+
+        if (!res.ok) return showError('Ссылка не работает');
+
+        const text = await res.text();
+
+        const match = text.match(/expire=(\d+)/);
+        if (!match) return showError('Нет expire');
+
+        const expire = parseInt(match[1]);
+
+        loginScreen.style.display = 'none';
+        profileScreen.style.display = 'block';
+
+        expiryDate.textContent = new Date(expire * 1000).toLocaleDateString('ru-RU');
+        serversInfo.textContent = config.servers;
+
+        currentSubUrl = config.url;
+
+        startCountdown(expire);
+
+    } catch {
+        showError('Ошибка загрузки');
+    }
+}
+
+// ===== PASSWORD TOGGLE =====
+function togglePassword() {
+    if (password.type === "password") {
+        password.type = "text";
+    } else {
+        password.type = "password";
+    }
+}
+
+// ===== THEME =====
+function toggleTheme() {
+    document.body.classList.toggle('dark');
+}
+
+// ===== COUNTDOWN =====
+function startCountdown(ts) {
+    clearInterval(countdownInterval);
+
+    countdownInterval = setInterval(() => {
+        const diff = ts * 1000 - Date.now();
+
+        days.textContent = Math.floor(diff / 86400000);
+        hours.textContent = Math.floor(diff / 3600000) % 24;
+        minutes.textContent = Math.floor(diff / 60000) % 60;
+        seconds.textContent = Math.floor(diff / 1000) % 60;
+    }, 1000);
+}
+
+// ===== COPY =====
+function copySub() {
+    navigator.clipboard.writeText(currentSubUrl);
+    alert('Ссылка скопирована');
+}
+
+// ===== UTILS =====
+function showError(t) {
+    error.textContent = t;
+    error.classList.add('show');
+}
+
+function logout() {
+    location.reload();
+}
+
+password.addEventListener('keypress', e => {
+    if (e.key === 'Enter') openVPN();
+});
+</script>
+
+</body>
+</html>
