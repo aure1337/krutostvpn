@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Psychosis VPN</title>
+
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+
+<body>
+
+<div class="content">
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginScreen">
+    <div class="logo">
+        <h1>Psychosis VPN</h1>
+        <p>Premium Access</p>
+    </div>
+
+    <div class="error" id="error"></div>
+
+    <div class="form-group">
+        <label>Ключ доступа</label>
+        <input type="password" id="password" placeholder="Введите ключ">
+    </div>
+
+    <button class="button" onclick="openVPN()">Подключиться</button>
+</div>
+
+<!-- PROFILE -->
+<div id="profileScreen" style="display:none;">
+    <div class="profile-header">
+        <div class="profile-avatar">👤</div>
+        <h2 id="userTitle">Ваш профиль</h2>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Статус</div>
+        <div class="info-value status-active">Активен</div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Подписка до</div>
+        <div class="info-value" id="expiryDate"></div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Серверы</div>
+        <div class="info-value" id="serversInfo"></div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Осталось</div>
+        <div class="countdown-items">
+            <div class="countdown-item"><span id="days"></span><span class="countdown-label">дни</span></div>
+            <div class="countdown-item"><span id="hours"></span><span class="countdown-label">часы</span></div>
+            <div class="countdown-item"><span id="minutes"></span><span class="countdown-label">мин</span></div>
+            <div class="countdown-item"><span id="seconds"></span><span class="countdown-label">сек</span></div>
+        </div>
+    </div>
+
+    <button class="button" onclick="openV2ray()">Добавить в V2rayTun</button>
+    <button class="button" onclick="openHapp()">Добавить в Happ</button>
+    <button class="button button-logout" onclick="logout()">Выйти</button>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel" style="display:none;">
+    <h2>Админ панель</h2>
+
+    <div class="info-card">
+        <div class="info-label">Создать ключ</div>
+        <input id="newKey" placeholder="Пароль">
+        <input id="newUrl" placeholder="URL подписки">
+        <input id="newServers" placeholder="Серверы">
+        <button class="button" onclick="addKey()">Создать</button>
+    </div>
+
+    <div class="info-card">
+        <div class="info-label">Список ключей</div>
+        <div id="keysList"></div>
+    </div>
+
+    <button class="button button-logout" onclick="logout()">Выйти</button>
+</div>
+
+</div>
+</div>
+
+<script>
+
+// ====== БАЗА ======
+let passwords = JSON.parse(localStorage.getItem('passwords')) || {
+    '6417d118af2071c929a4232db38fa0ecf58932845343b5e986ae407cb908211e': {
+        url: 'https://raw.githubusercontent.com/aure1337/krutostvpn/main/test22',
+        servers: 3,
+        admin: true
+    },
+  '9d8f020fdf5d96d55f63e1dcd0fbc4aa4f7ed76452ec607489e00e542eadfe8c': {
+        url: 'https://raw.githubusercontent.com/aure1337/krutostvpn/main/test77',
+        servers: 3,
+        admin: false
+    }
+};
+
+let currentSubUrl;
+let countdownInterval;
+
+// ====== LOGIN ======
+async function openVPN() {
+    const pwd = password.value;
+    if (!pwd) return showError('Введите ключ');
+
+    const hash = CryptoJS.SHA256(pwd).toString();
+    const config = passwords[hash];
+
+    if (!config) return showError('Неверный ключ');
+
+    // ADMIN
+    if (config.admin) {
+        loginScreen.style.display = 'none';
+        adminPanel.style.display = 'block';
+        renderKeys();
+        return;
+    }
+
+    try {
+        const res = await fetch(config.url);
+        const text = await res.text();
+        const match = text.match(/expire=(\d+)/);
+
+        if (!match) return showError('Нет expire');
+
+        const expire = parseInt(match[1]);
+
+        loginScreen.style.display = 'none';
+        profileScreen.style.display = 'block';
+
+        expiryDate.textContent = new Date(expire * 1000).toLocaleDateString('ru-RU');
+        serversInfo.textContent = config.servers;
+
+        currentSubUrl = config.url;
+
+        startCountdown(expire);
+
+    } catch {
+        showError('Ошибка загрузки');
+    }
+}
+
+// ====== COUNTDOWN ======
+function startCountdown(ts) {
+    clearInterval(countdownInterval);
+
+    countdownInterval = setInterval(() => {
+        const diff = ts * 1000 - Date.now();
+
+        if (diff <= 0) return;
+
+        days.textContent = Math.floor(diff / 86400000);
+        hours.textContent = Math.floor(diff / 3600000) % 24;
+        minutes.textContent = Math.floor(diff / 60000) % 60;
+        seconds.textContent = Math.floor(diff / 1000) % 60;
+    }, 1000);
+}
+
+// ====== APPS ======
+function openV2ray() {
+    location.href = `v2raytun://import-sub?url=${encodeURIComponent(currentSubUrl)}`;
+}
+
+function openHapp() {
+    location.href = `happ://add?url=${encodeURIComponent(currentSubUrl)}`;
+}
+
+// ====== ADMIN ======
+function addKey() {
+    const key = newKey.value;
+    const url = newUrl.value;
+    const servers = newServers.value;
+
+    if (!key || !url) return;
+
+    const hash = CryptoJS.SHA256(key).toString();
+
+    passwords[hash] = {
+        url,
+        servers: parseInt(servers) || 1
+    };
+
+    localStorage.setItem('passwords', JSON.stringify(passwords));
+
+    newKey.value = '';
+    newUrl.value = '';
+    newServers.value = '';
+
+    renderKeys();
+}
+
+function renderKeys() {
+    keysList.innerHTML = '';
+
+    for (let hash in passwords) {
+        const el = document.createElement('div');
+        el.textContent = hash;
+        keysList.appendChild(el);
+    }
+}
+
+// ====== UTILS ======
+function showError(t) {
+    error.textContent = t;
+    error.classList.add('show');
+}
+
+function logout() {
+    location.reload();
+}
+
+password.addEventListener('keypress', e => {
+    if (e.key === 'Enter') openVPN();
+});
+
+</script>
+
+</body>
+</html>
