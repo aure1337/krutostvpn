@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Psychosis VPN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-family: Arial;
+        }
+        .container {
+            text-align: center;
+            background: rgba(0,0,0,0.7);
+            padding: 40px;
+            border-radius: 10px;
+        }
+        input { 
+            padding: 10px; 
+            margin: 10px; 
+            width: 200px;
+            border: none;
+            border-radius: 5px;
+        }
+        button { 
+            padding: 10px 20px; 
+            background: #ff6b6b; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover { background: #ff5252; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Psychosis VPN</h1>
+        <p>Введи пароль чтобы открыть подписку</p>
+        <input type="password" id="pwd" placeholder="Пароль">
+        <button onclick="check()">Подписаться</button>
+    </div>
+
+    <script>
+        function check() {
+            const pwd = document.getElementById('pwd').value;
+            // Хешируем пароль
+            const hash = CryptoJS.SHA256(pwd).toString();
+            const correctHash = "88f9d3e7a4272c96b6daf0b7e7d45461e15564e5d05f1b92f1cc69cebe607a11"; // Генерируй на https://www.sha256.online/
+            
+            if (hash === correctHash) {
+                window.location.href = "happ://subscribe?url=https://raw.githubusercontent.com/aure1337/krutostvpn/refs/heads/main/bypass.txt";
+            } else {
+                alert("❌ Неверный пароль");
+            }
+        }
+    </script>
+</body>
+</html>
