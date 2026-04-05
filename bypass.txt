@@ -6,4 +6,4 @@
 
 vless://40600c8a-730a-411c-b72b-c3bca115dcf7@95.163.208.83:7443?encryption=none&type=grpc&security=reality&mode=gun&serviceName=UpdateService&fp=qq&sni=ads.x5.ru&pbk=8hdXyv-YBQIaA2xgOfT2nhfna5y5s19qbZD-SpMZ6hg&sid=dd700a46e27751d1#%F0%9F%87%B7%F0%9F%87%BA%20Russia%20%5B%2ACIDR%5D%20VK%20t.me%2Test
 
-//vless://70c83fd0-f8aa-000a-9f7f-9f73342b496f@217.16.21.235:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=random&pbk=OCRYYq4e92sQ-wWFRX6WX9pdvuFBWOqybLhpSiv3nFA&sid=111111&sni=5post-gate.x5.ru#234.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20SNI%3A%205post-gate.x5.ru%20%7C%20CIDR%3A%20%3F%20%7C%20TG%3A%20%40wlrustg%20%7C%20Thanks%3A%20%40YoutubeUnBlockRu%20t.me%2Test
+vless://70c83fd0-f8aa-000a-9f7f-9f73342b496f@217.16.21.235:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=random&pbk=OCRYYq4e92sQ-wWFRX6WX9pdvuFBWOqybLhpSiv3nFA&sid=111111&sni=5post-gate.x5.ru#234.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20SNI%3A%205post-gate.x5.ru%20%7C%20CIDR%3A%20%3F%20%7C%20TG%3A%20%40wlrustg%20%7C%20Thanks%3A%20%40YoutubeUnBlockRu%20t.me%2Test
