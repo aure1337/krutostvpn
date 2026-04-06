@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychosis VPN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    :root {
+        --primary: #ff4d4d;
+        --secondary: #8b3a3a;
+        --dark: #0f0505;
+        --darker: #1a0a0a;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, var(--dark) 0%, #2d0f0f 25%, var(--darker) 50%, #3d1a1a 75%, #1f0a0a 100%);
+        background-attachment: fixed;
+        color: #fff;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    /* Навигация */
+    nav {
+        background: rgba(20, 5, 5, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid var(--secondary);
+        padding: 0 20px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 70px;
+    }
+
+    .nav-logo {
+        font-size: 28px;
+        font-weight: 900;
+        background: linear-gradient(135deg, #ff6b6b, var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: 2px;
+    }
+
+    .nav-links {
+        display: flex;
+        gap: 30px;
+        align-items: center;
+    }
+
+    .nav-links a {
+        color: #a0a0a0;
+        text-decoration: none;
+        transition: color 0.3s;
+        font-weight: 600;
+    }
+
+    .nav-links a:hover {
+        color: var(--primary);
+    }
+
+    .nav-button {
+        padding: 10px 25px;
+        background: linear-gradient(135deg, var(--primary), #cc0000);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+        transition: all 0.3s;
+    }
+
+    .nav-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(255, 77, 77, 0.4);
+    }
+
+    /* Контент */
+    .content {
+        position: relative;
+        z-index: 10;
+        margin-top: 70px;
+    }
+
+    /* Главная страница */
+    .page {
+        display: none;
+        min-height: calc(100vh - 70px);
+        padding: 40px 20px;
+    }
+
+    .page.active {
+        display: block;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Главная */
+    .hero {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .hero h1 {
+        font-size: 52px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #ff6b6b, var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero p {
+        font-size: 18px;
+        color: #a0a0a0;
+        margin-bottom: 30px;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 15px 40px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), #cc0000);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(255, 77, 77, 0.4);
+    }
+
+    .btn-secondary {
+        background: rgba(139, 58, 58, 0.3);
+        border: 2px solid var(--secondary);
+        color: #ff9999;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(139, 58, 58, 0.5);
+    }
+
+    /* Цены */
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        margin: 40px 0;
+    }
+
+    .price-card {
+        background: linear-gradient(135deg, rgba(60, 15, 15, 0.8) 0%, rgba(20, 5, 5, 0.8) 100%);
+        border: 2px solid var(--secondary);
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s;
+        box-shadow: 0 8px 32px rgba(255, 77, 77, 0.1);
+    }
+
+    .price-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 40px rgba(255, 77, 77, 0.3);
+        border-color: var(--primary);
+    }
+
+    .price-card h3 {
+        font-size: 24px;
+        margin-bottom: 15px;
+        color: #ff9999;
+    }
+
+    .price-card .price {
+        font-size: 36px;
+        font-weight: 900;
+        color: var(--primary);
+        margin-bottom: 15px;
+    }
+
+    .price-card .features {
+        text-align: left;
+        margin: 20px 0;
+        font-size: 14px;
+        color: #a0a0a0;
+    }
+
+    .price-card .features li {
+        margin: 10px 0;
+        list-style: none;
+    }
+
+    .price-card .features li:before {
+        content: "✓ ";
+        color: #4ade80;
+        font-weight: 900;
+    }
+
+    /* Контакты */
+    .contacts {
+        text-align: center;
+        padding: 40px;
+    }
+
+    .contacts h2 {
+        font-size: 36px;
+        margin-bottom: 30px;
+        color: #ff9999;
+    }
+
+    .contact-info {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .contact-item {
+        background: rgba(139, 58, 58, 0.2);
+        border: 2px solid var(--secondary);
+        border-radius: 12px;
+        padding: 20px 30px;
+        min-width: 250px;
+    }
+
+    .contact-item p {
+        font-size: 18px;
+        color: #ff9999;
+        margin-bottom: 10px;
+    }
+
+    .contact-item a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    /* Форма входа */
+    .login-form {
+        max-width: 400px;
+        margin: 40px auto;
+        background: rgba(60, 15, 15, 0.9);
+        border: 2px solid var(--secondary);
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 8px 32px rgba(255, 77, 77, 0.2);
+    }
+
+    .login-form h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #ff9999;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #ff9999;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid var(--secondary);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 20px rgba(255, 77, 77, 0.3);
+    }
+
+    .login-error {
+        background: rgba(255, 77, 77, 0.2);
+        border: 1px solid var(--primary);
+        color: #ff9999;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+        font-size: 13px;
+    }
+
+    /* Админка */
+    .admin-panel {
+        max-width: 1000px;
+        margin: 40px auto;
+        background: rgba(60, 15, 15, 0.9);
+        border: 2px solid var(--secondary);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(255, 77, 77, 0.2);
+    }
+
+    .admin-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid var(--secondary);
+        padding-bottom: 15px;
+    }
+
+    .admin-tab {
+        padding: 10px 20px;
+        background: rgba(139, 58, 58, 0.2);
+        border: none;
+        color: #a0a0a0;
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 700;
+        transition: all 0.3s;
+    }
+
+    .admin-tab.active {
+        background: var(--primary);
+        color: white;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .form-row.full {
+        grid-template-columns: 1fr;
+    }
+
+    .server-list {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .server-item {
+        background: rgba(139, 58, 58, 0.2);
+        border: 1px solid var(--secondary);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+    }
+
+    .server-item button {
+        padding: 6px 12px;
+        background: rgba(255, 77, 77, 0.5);
+        border: 1px solid var(--primary);
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .server-item button:hover {
+        background: var(--primary);
+    }
+
+    .subscription-list {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .subscription-item {
+        background: rgba(139, 58, 58, 0.2);
+        border: 1px solid var(--secondary);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+    }
+
+    .subscription-item .link {
+        color: var(--primary);
+        cursor: pointer;
+        text-decoration: underline;
+        word-break: break-all;
+    }
+
+    .subscription-item button {
+        padding: 6px 12px;
+        background: rgba(255, 77, 77, 0.5);
+        border: 1px solid var(--primary);
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .nav-links {
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .pricing-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .server-item, .subscription-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <canvas id="snowCanvas"></canvas>
+
+```
+<!-- Навигация -->
+<nav>
+    <div class="nav-container">
+        <div class="nav-logo">PSYCHOSIS VPN</div>
+        <div class="nav-links">
+            <a href="#" onclick="showPage('home')">Главная</a>
+            <a href="https://t.me/psychosisvpn" target="_blank">Телеграм</a>
+            <button class="nav-button" onclick="showPage('login')">Войти</button>
+        </div>
+    </div>
+</nav>
+
+<div class="content">
+    <!-- Главная -->
+    <div id="home" class="page active">
+        <div class="hero">
+            <h1>🚀 PSYCHOSIS VPN</h1>
+            <p>Быстрая, надежная и безопасная подписка</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="showPage('login')">КУПИТЬ ПОДПИСКУ</button>
+                <button class="btn btn-secondary" onclick="document.querySelector('.contacts').scrollIntoView({behavior: 'smooth'})">КОНТАКТЫ</button>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2 style="text-align: center; margin: 60px 0 40px; color: #ff9999; font-size: 32px;">💳 ТАРИФЫ</h2>
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <h3>1 Месяц</h3>
+                    <div class="price">299₽</div>
+                    <ul class="features">
+                        <li>100 GB трафика</li>
+                        <li>3+ сервера</li>
+                        <li>24/7 поддержка</li>
+                    </ul>
+                    <button class="btn btn-primary" style="width: 100%;">ВЫБРАТЬ</button>
+                </div>
+                <div class="price-card">
+                    <h3>3 Месяца</h3>
+                    <div class="price">799₽</div>
+                    <ul class="features">
+                        <li>300 GB трафика</li>
+                        <li>3+ сервера</li>
+                        <li>24/7 поддержка</li>
+                    </ul>
+                    <button class="btn btn-primary" style="width: 100%;">ВЫБРАТЬ</button>
+                </div>
+                <div class="price-card">
+                    <h3>1 Год</h3>
+                    <div class="price">2999₽</div>
+                    <ul class="features">
+                        <li>1000 GB трафика</li>
+                        <li>3+ сервера</li>
+                        <li>24/7 поддержка</li>
+                    </ul>
+                    <button class="btn btn-primary" style="width: 100%;">ВЫБРАТЬ</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="contacts" style="margin-top: 60px;">
+            <h2>📞 КОНТАКТЫ</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <p>💬 Telegram</p>
+                    <a href="https://t.me/psychosisvpn" target="_blank">@psychosisvpn</a>
+                </div>
+                <div class="contact-item">
+                    <p>👤 Администратор</p>
+                    <a href="https://t.me/aurerise" target="_blank">@aurerise</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вход -->
+    <div id="login" class="page">
+        <div class="login-form">
+            <h2>🔐 ВХОД</h2>
+            <div class="login-error" id="loginError"></div>
+            <div class="form-group">
+                <label>Введи свой ключ</label>
+                <input type="password" id="loginKey" placeholder="Твой ключ из профиля..." autocomplete="off">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="userLogin()">ВОЙТИ</button>
+            <p style="text-align: center; margin-top: 20px; color: #a0a0a0; font-size: 13px;">Нет ключа? <a href="https://t.me/psychosisvpn" target="_blank" style="color: var(--primary);">Купи подписку</a></p>
+        </div>
+    </div>
+
+    <!-- Профиль пользователя -->
+    <div id="profile" class="page">
+        <div class="admin-panel">
+            <h2 style="margin-bottom: 30px; color: #ff9999;">👤 ВАШ ПРОФИЛЬ</h2>
+            <div id="profileContent" style="display: none;">
+                <!-- Профиль заполняется JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Админка -->
+    <div id="admin" class="page">
+        <div class="admin-panel">
+            <h2 style="margin-bottom: 30px; color: #ff9999;">⚙️ АДМИН ПАНЕЛЬ</h2>
+            
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchAdminTab(this, 'servers')">Серверы</button>
+                <button class="admin-tab" onclick="switchAdminTab(this, 'subscriptions')">Подписки</button>
+            </div>
+
+            <!-- Серверы -->
+            <div id="servers" class="tab-content active">
+                <h3 style="margin-bottom: 20px; color: #ff9999;">➕ Добавить сервер</h3>
+                <div class="form-group full">
+                    <label>VLESS конфиг</label>
+                    <textarea id="serverConfig" style="width: 100%; padding: 12px; border: 2px solid var(--secondary); border-radius: 8px; background: rgba(255,255,255,0.05); color: white; font-family: monospace; min-height: 100px; font-size: 12px; resize: vertical;">vless://uuid@ip:port?type=grpc&security=reality...</textarea>
+                </div>
+                <div class="form-group full">
+                    <label>Название сервера</label>
+                    <input type="text" id="serverName" placeholder="Psychosis Vpn | 1 🇷🇺">
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="addServer()">ДОБАВИТЬ СЕРВЕР</button>
+                
+                <div class="server-list" id="serversList"></div>
+            </div>
+
+            <!-- Подписки -->
+            <div id="subscriptions" class="tab-content">
+                <h3 style="margin-bottom: 20px; color: #ff9999;">➕ Создать подписку</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Дней</label>
+                        <input type="number" id="subDays" placeholder="30" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Гигабайт</label>
+                        <input type="number" id="subGB" placeholder="100" value="100">
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="createSubscription()">СОЗДАТЬ ПОДПИСКУ</button>
+                
+                <div class="subscription-list" id="subscriptionsList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Снежинки
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const snowflakes = [];
+    
+    class Snowflake {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height - canvas.height;
+            this.radius = Math.random() * 1.5 + 0.5;
+            this.opacity = Math.random() * 0.4 + 0.2;
+            this.velocityY = Math.random() * 0.8 + 0.3;
+            this.velocityX = (Math.random() - 0.5) * 1.5;
+        }
+
+        draw() {
+            ctx.save();
+            ctx.globalAlpha = this.opacity;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        update() {
+            this.y += this.velocityY;
+            this.x += this.velocityX;
+
+            if (this.y > canvas.height) {
+                this.y = -10;
+                this.x = Math.random() * canvas.width;
+            }
+
+            if (this.x > canvas.width) this.x = 0;
+            if (this.x < 0) this.x = canvas.width;
+        }
+    }
+
+    function createSnowflakes() {
+        for (let i = 0; i < 40; i++) {
+            snowflakes.push(new Snowflake());
+        }
+    }
+
+    function animateSnow() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        snowflakes.forEach(flake => {
+            flake.update();
+            flake.draw();
+        });
+        requestAnimationFrame(animateSnow);
+    }
+
+    createSnowflakes();
+    animateSnow();
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+
+    // Хранилище данных
+    let data = {
+        servers: [],
+        subscriptions: [],
+        users: {},
+        currentUser: null
+    };
+
+    function loadData() {
+        const saved = localStorage.getItem('psychosis_vpn_data');
+        if (saved) {
+            data = JSON.parse(saved);
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('psychosis_vpn_data', JSON.stringify(data));
+    }
+
+    function generateKey(length = 16) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!";
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    function hashKey(key) {
+        return CryptoJS.SHA256(key).toString();
+    }
+
+    // Переключение страниц
+    function showPage(pageName) {
+        const pages = document.querySelectorAll('.page');
+        pages.forEach(p => p.classList.remove('active'));
+        document.getElementById(pageName).classList.add('active');
+    }
+
+    // Вход
+    function userLogin() {
+        const key = document.getElementById('loginKey').value;
+        if (!key) {
+            showLoginError('Введи ключ');
+            return;
+        }
+
+        const hashedKey = hashKey(key);
+        const subscription = data.subscriptions.find(s => s.keyHash === hashedKey);
+
+        if (!subscription) {
+            showLoginError('❌ Ключ не найден');
+            return;
+        }
+
+        data.currentUser = subscription;
+        showProfile();
+        showPage('profile');
+    }
+
+    function showLoginError(msg) {
+        const error = document.getElementById('loginError');
+        error.textContent = msg;
+        error.style.display = 'block';
+        setTimeout(() => error.style.display = 'none', 3000);
+    }
+
+    function showProfile() {
+        const sub = data.currentUser;
+        const expire = new Date(sub.expires * 1000).toLocaleDateString('ru-RU');
+        const html = `
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h3 style="color: #ff9999; font-size: 24px; margin-bottom: 20px;">👤 Ваша подписка</h3>
+                <div class="contact-item" style="display: inline-block; min-width: 400px;">
+                    <p style="color: white; margin-bottom: 15px;">
+                        Статус: <span style="color: #4ade80; font-weight: 900;">✓ ДЕЙСТВУЕТ</span>
+                    </p>
+                    <p style="color: white; margin-bottom: 10px;">
+                        До: <strong>${expire}</strong>
+                    </p>
+                    <p style="color: white; margin-bottom: 20px;">
+                        Трафик: <strong>${sub.trafficUsed}/${sub.trafficGB} GB</strong>
+                    </p>
+                    <p style="color: #a0a0a0; font-size: 12px; margin-bottom: 10px;">🔑 Ключ:</p>
+                    <p style="color: var(--primary); word-break: break-all; font-family: monospace; font-size: 12px; margin-bottom: 10px;">${sub.key}</p>
+                    <button class="btn btn-primary" onclick="copyToClipboard('${sub.key}')">СКОПИРОВАТЬ КЛЮЧ</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" style="width: 100%; margin-top: 20px;" onclick="userLogout()">ВЫЙТИ</button>
+        `;
+        document.getElementById('profileContent').innerHTML = html;
+        document.getElementById('profileContent').style.display = 'block';
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('✓ Скопировано!');
+        });
+    }
+
+    function userLogout() {
+        data.currentUser = null;
+        document.getElementById('loginKey').value = '';
+        showPage('home');
+    }
+
+    // Админка - Серверы
+    function addServer() {
+        const config = document.getElementById('serverConfig').value;
+        const name = document.getElementById('serverName').value;
+
+        if (!config || !name) {
+            alert('Заполни все поля');
+            return;
+        }
+
+        const server = {
+            id: generateKey(12),
+            config,
+            name,
+            created: new Date().toISOString()
+        };
+
+        data.servers.push(server);
+        saveData();
+        document.getElementById('serverConfig').value = '';
+        document.getElementById('serverName').value = '';
+        renderServers();
+    }
+
+    function renderServers() {
+        const list = document.getElementById('serversList');
+        list.innerHTML = '';
+
+        if (data.servers.length === 0) {
+            list.innerHTML = '<p style="color: #a0a0a0; text-align: center;">Серверов нет</p>';
+            return;
+        }
+
+        data.servers.forEach(server => {
+            const item = document.createElement('div');
+            item.className = 'server-item';
+            item.innerHTML = `
+                <div>
+                    <strong>${server.name}</strong><br>
+                    <span style="color: #a0a0a0;">${server.config.substring(0, 80)}...</span>
+                </div>
+                <button onclick="deleteServer('${server.id}')">УДАЛИТЬ</button>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    function deleteServer(id) {
+        if (confirm('Удалить сервер?')) {
+            data.servers = data.servers.filter(s => s.id !== id);
+            saveData();
+            renderServers();
+        }
+    }
+
+    // Админка - Подписки
+    function createSubscription() {
+        const days = parseInt(document.getElementById('subDays').value);
+        const gb = parseInt(document.getElementById('subGB').value);
+
+        if (!days || !gb) {
+            alert('Заполни все поля');
+            return;
+        }
+
+        const key = generateKey();
+        const keyHash = hashKey(key);
+        const expires = Math.floor(Date.now() / 1000) + (days * 86400);
+        const linkKey = generateKey(20);
+        const linkHash = hashKey(linkKey);
+
+        const subscription = {
+            id: generateKey(12),
+            key,
+            keyHash,
+            linkKey,
+            linkHash,
+            days,
+            trafficGB: gb,
+            trafficUsed: 0,
+            expires,
+            created: new Date().toISOString()
+        };
+
+        data.subscriptions.push(subscription);
+        saveData();
+        document.getElementById('subDays').value = '30';
+        document.getElementById('subGB').value = '100';
+        renderSubscriptions();
+    }
+
+    function renderSubscriptions() {
+        const list = document.getElementById('subscriptionsList');
+        list.innerHTML = '';
+
+        if (data.subscriptions.length === 0) {
+            list.innerHTML = '<p style="color: #a0a0a0; text-align: center;">Подписок нет</p>';
+            return;
+        }
+
+        data.subscriptions.forEach(sub => {
+            const expire = new Date(sub.expires * 1000).toLocaleDateString('ru-RU');
+            const item = document.createElement('div');
+            item.className = 'subscription-item';
+            item.innerHTML = `
+                <div style="flex: 1;">
+                    <strong>${sub.days} дней / ${sub.trafficGB} GB</strong><br>
+                    <span style="color: #a0a0a0; font-size: 12px;">До: ${expire}</span><br>
+                    <span class="link" onclick="copyToClipboard('https://psychosisvpn.com/subscribe/${sub.linkKey}')" title="Нажми чтобы скопировать">Ссылка подписки</span>
+                </div>
+                <button onclick="deleteSubscription('${sub.id}')">УДАЛИТЬ</button>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    function deleteSubscription(id) {
+        if (confirm('Удалить подписку?')) {
+            data.subscriptions = data.subscriptions.filter(s => s.id !== id);
+            saveData();
+            renderSubscriptions();
+        }
+    }
+
+    function switchAdminTab(btn, tabName) {
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(tabName).classList.add('active');
+    }
+
+    // Проверка админки при загрузке
+    function checkAdmin() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const adminKey = urlParams.get('admin');
+        if (adminKey === hashKey('admin123')) {
+            showPage('admin');
+        }
+    }
+
+    // Инициализация
+    loadData();
+    renderServers();
+    renderSubscriptions();
+    checkAdmin();
+</script>
+```
+
+</body>
+</html>
